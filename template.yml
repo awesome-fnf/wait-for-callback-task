@@ -1,0 +1,41 @@
+ROSTemplateFormatVersion: '2015-09-01'
+Transform: 'Aliyun::Serverless-2018-04-03'
+Resources:
+  WaitForCallbackWorkflow:
+    Type: 'Aliyun::Serverless::Flow'
+    DependsOn:
+      - WaitForCallbackService
+    Properties:
+      Description: Call any HTTP APIs
+      Policies:
+        - AliyunFCInvocationAccess
+      DefinitionUri: ./wait-for-callback-task.flow.yml
+  WaitForCallbackService:
+    Type: 'Aliyun::Serverless::Service'
+    Properties:
+      Description: helloworld
+      Policies:
+        - Version: "1"
+          Statement:
+            - Effect: Allow
+              Action:
+                - fnf:ReportTaskSucceeded
+                - fnf:ReportTaskFailed
+              Resource: '*'
+        - AliyunFCInvocationAccess
+    workflowCallback:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: index.handler
+        Runtime: python3
+        Timeout: 60
+        MemorySize: 128
+        CodeUri: ./functions/workflowCallback
+    funcProxy:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: index.handler
+        Runtime: python3
+        Timeout: 60
+        MemorySize: 128
+        CodeUri: ./functions/funcProxy
